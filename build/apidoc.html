@@ -63,6 +63,15 @@
 
         <li>
 
+            <a class="apidocElementLiA" href="#apidoc.element.templar.templar">
+            function <span class="apidocSignatureSpan"></span>templar
+            <span class="apidocSignatureSpan">(req, res, opts)</span>
+            </a>
+
+        </li>
+
+        <li>
+
             <a class="apidocElementLiA" href="#apidoc.element.templar.loadFolder">
             function <span class="apidocSignatureSpan">templar.</span>loadFolder
             <span class="apidocSignatureSpan">(folder)</span>
@@ -76,6 +85,159 @@
 
 <div class="apidocSectionDiv">
 <h1><a href="#apidoc.module.templar" id="apidoc.module.templar">module templar</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.templar.templar" id="apidoc.element.templar.templar">
+        function <span class="apidocSignatureSpan"></span>templar
+        <span class="apidocSignatureSpan">(req, res, opts)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function Templar(req, res, opts) {
+  if (!opts) throw new Error(&#x27;Please provide options to Templar&#x27;)
+
+  var folder = opts.folder
+  , engine = opts.engine
+  , nocache = opts.cache === false
+  , stamp = opts.stamp
+
+  if (!engine || !folder) {
+    throw new Error(&#x27;Templar needs engine and folder options&#x27;)
+  }
+
+  folder = path.resolve(folder)
+
+  // In order to support include() methods, we need to load up
+  // all of the templates in the folder.  This has the other
+  // somewhat nice effect of meaning that we don&#x27;t have to do
+  // any fs.readFile calls later on.
+  //
+  // Of course, this sucks a lot if you have a lot of different
+  // folders where templates go, but that&#x27;s pretty rare.
+  if (!loaded[folder]) loadFolder(folder)
+
+  template.available = available
+  template.has = has
+  template.locals = {}
+  template.locals.locals = template.locals
+  return template
+
+  function has (f) {
+    f = path.resolve(folder, f)
+    return !!templateCache[f]
+  }
+
+  function available () {
+    return Object.keys(templateCache).filter(function (f) {
+      return f.indexOf(folder) === 0
+    }).map(function (f) {
+      return path.relative(folder, f)
+    })
+  }
+
+  function template () {
+    var f, data, code, endres
+    endres = true;
+    for (var i = 0; i &#x3c; arguments.length; i ++) {
+      switch (typeof arguments[i]) {
+        case &#x27;number&#x27;: code = arguments[i]; break
+        case &#x27;string&#x27;: f = arguments[i]; break
+        case &#x27;boolean&#x27; : endres = arguments[i]; break
+        case &#x27;object&#x27;: data = arguments[i]; break
+        default: throw new Error(&#x27;bad argument to template&#x27;)
+      }
+    }
+
+    if (!f) throw new Error(&#x27;no template provided&#x27;)
+    f = path.resolve(folder, f)
+    if (!code) code = 200
+    if (data &#x26;&#x26; (typeof data === &#x27;object&#x27;)) {
+      Object.keys(data).forEach(function (k) {
+        template.locals[k] = data[k]
+      })
+      template.locals.locals = template.locals
+    }
+
+    var tpl = templateCache[f]
+    if (!tpl) throw new Error(&#x27;invalid template: &#x27;+f)
+
+    // the data is part of the ETag
+    // serving the same template with the same data = same result
+    var ins = sigmund(template.locals)
+    , tag = getETag(tpl.key + &#x22;:&#x22; + ins)
+
+    if (!nocache &#x26;&#x26; req.headers[&#x27;if-none-match&#x27;] === tag) {
+      res.statusCode = 304
+      return res.end()
+    }
+    res.setHeader(&#x27;etag&#x27;, tag)
+    if (stamp) res.setHeader(&#x27;x-templar-stamp&#x27;, stamp)
+
+    // stamp is applied *after* getting the etag, otherwise
+    // etags will be worker-specific which makes then much less
+    // likely to hit the browser cache.
+    template.locals.stamp = stamp
+    var out = output(f, template.locals, tag)
+
+    // ok, actually send a result.
+    res.statusCode = code || 200
+    var curCT = res.getHeader(&#x27;content-type&#x27;)
+    if (!curCT) res.setHeader(&#x27;content-type&#x27;, &#x27;text/html&#x27;)
+    if(endres)
+      res.end(out)
+    else
+      res.write(out);
+  }
+
+
+  function output (f, data, tag) {
+    // only generate if we have to
+    var out = outputCache.get(tag)
+    if (!nocache &#x26;&#x26; out) return out
+
+    // we&#x27;re not actually going to provide THAT data object
+    // to the template, however.  Instead, we&#x27;re going to make a copy,
+    // so that we can provide an &#x27;include&#x27; function, which works just
+    // like require(), in that each template includes relative to
+    // itself
+    var tplData = {}
+
+    Object.keys(data).forEach(function (k) {
+      tplData[k] = data[k]
+    })
+    tplData.include = include(f, tag)
+
+    // include a link to &#x27;locals&#x27; to see what we&#x27;ve been provided.
+    tplData.locals = tplData
+
+    out = compile(f)(tplData)
+    outputCache.set(tag, out)
+
+    return out
+  }
+
+  // a partial&#x27;s effective tag is the parent tag + f + data
+  function include (from, tag) { return function (f, data) {
+    var ins = sigmund(data)
+    , t = tag + f + ins
+    return output(path.resolve(path.dirname(from), f), data || {}, t)
+  }}
+
+  function compile (f) {
+    var tpl = templateCache[f]
+    // only compile if we have to.
+    var compiled = compileCache.get(f)
+
+    if (!compiled || nocache) {
+      if (nocache) {
+        tpl = loadFile_(f, fs.statSync(f))
+      }
+
+      co ...</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
 
 
     <h2>

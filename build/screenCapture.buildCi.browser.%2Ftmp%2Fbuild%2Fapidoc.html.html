@@ -1,4 +1,4 @@
-<div class="apidocDiv">
+<html><head></head><body><div class="apidocDiv">
 <style>
 /*csslint
 */
@@ -47,17 +47,10 @@
 }
 </style>
 <h1>api documentation for
-    <a
-
-        href="https://github.com/isaacs/templar"
-
-    >templar (v0.2.2)</a>
+    <a href="https://github.com/isaacs/templar">templar (v0.2.2)</a>
 </h1>
 <h4>A lightweight template thing</h4>
-<div class="apidocSectionDiv"><a
-    href="#apidoc.tableOfContents"
-    id="apidoc.tableOfContents"
-><h1>table of contents</h1></a><ol>
+<div class="apidocSectionDiv"><a href="#apidoc.tableOfContents" id="apidoc.tableOfContents"><h1>table of contents</h1></a><ol>
 
     <li class="apidocModuleLi"><a href="#apidoc.module.templar">module templar</a><ol>
 
@@ -95,7 +88,7 @@
     </h2>
     <ul>
     <li>description and source-code<pre class="apidocCodePre">function Templar(req, res, opts) {
-  if (!opts) throw new Error(&#x27;Please provide options to Templar&#x27;)
+  if (!opts) throw new Error('Please provide options to Templar')
 
   var folder = opts.folder
   , engine = opts.engine
@@ -103,18 +96,18 @@
   , stamp = opts.stamp
 
   if (!engine || !folder) {
-    throw new Error(&#x27;Templar needs engine and folder options&#x27;)
+    throw new Error('Templar needs engine and folder options')
   }
 
   folder = path.resolve(folder)
 
   // In order to support include() methods, we need to load up
   // all of the templates in the folder.  This has the other
-  // somewhat nice effect of meaning that we don&#x27;t have to do
+  // somewhat nice effect of meaning that we don't have to do
   // any fs.readFile calls later on.
   //
   // Of course, this sucks a lot if you have a lot of different
-  // folders where templates go, but that&#x27;s pretty rare.
+  // folders where templates go, but that's pretty rare.
   if (!loaded[folder]) loadFolder(folder)
 
   template.available = available
@@ -139,20 +132,20 @@
   function template () {
     var f, data, code, endres
     endres = true;
-    for (var i = 0; i &#x3c; arguments.length; i ++) {
+    for (var i = 0; i &lt; arguments.length; i ++) {
       switch (typeof arguments[i]) {
-        case &#x27;number&#x27;: code = arguments[i]; break
-        case &#x27;string&#x27;: f = arguments[i]; break
-        case &#x27;boolean&#x27; : endres = arguments[i]; break
-        case &#x27;object&#x27;: data = arguments[i]; break
-        default: throw new Error(&#x27;bad argument to template&#x27;)
+        case 'number': code = arguments[i]; break
+        case 'string': f = arguments[i]; break
+        case 'boolean' : endres = arguments[i]; break
+        case 'object': data = arguments[i]; break
+        default: throw new Error('bad argument to template')
       }
     }
 
-    if (!f) throw new Error(&#x27;no template provided&#x27;)
+    if (!f) throw new Error('no template provided')
     f = path.resolve(folder, f)
     if (!code) code = 200
-    if (data &#x26;&#x26; (typeof data === &#x27;object&#x27;)) {
+    if (data &amp;&amp; (typeof data === 'object')) {
       Object.keys(data).forEach(function (k) {
         template.locals[k] = data[k]
       })
@@ -160,19 +153,19 @@
     }
 
     var tpl = templateCache[f]
-    if (!tpl) throw new Error(&#x27;invalid template: &#x27;+f)
+    if (!tpl) throw new Error('invalid template: '+f)
 
     // the data is part of the ETag
     // serving the same template with the same data = same result
     var ins = sigmund(template.locals)
-    , tag = getETag(tpl.key + &#x22;:&#x22; + ins)
+    , tag = getETag(tpl.key + ":" + ins)
 
-    if (!nocache &#x26;&#x26; req.headers[&#x27;if-none-match&#x27;] === tag) {
+    if (!nocache &amp;&amp; req.headers['if-none-match'] === tag) {
       res.statusCode = 304
       return res.end()
     }
-    res.setHeader(&#x27;etag&#x27;, tag)
-    if (stamp) res.setHeader(&#x27;x-templar-stamp&#x27;, stamp)
+    res.setHeader('etag', tag)
+    if (stamp) res.setHeader('x-templar-stamp', stamp)
 
     // stamp is applied *after* getting the etag, otherwise
     // etags will be worker-specific which makes then much less
@@ -182,8 +175,8 @@
 
     // ok, actually send a result.
     res.statusCode = code || 200
-    var curCT = res.getHeader(&#x27;content-type&#x27;)
-    if (!curCT) res.setHeader(&#x27;content-type&#x27;, &#x27;text/html&#x27;)
+    var curCT = res.getHeader('content-type')
+    if (!curCT) res.setHeader('content-type', 'text/html')
     if(endres)
       res.end(out)
     else
@@ -194,11 +187,11 @@
   function output (f, data, tag) {
     // only generate if we have to
     var out = outputCache.get(tag)
-    if (!nocache &#x26;&#x26; out) return out
+    if (!nocache &amp;&amp; out) return out
 
-    // we&#x27;re not actually going to provide THAT data object
-    // to the template, however.  Instead, we&#x27;re going to make a copy,
-    // so that we can provide an &#x27;include&#x27; function, which works just
+    // we're not actually going to provide THAT data object
+    // to the template, however.  Instead, we're going to make a copy,
+    // so that we can provide an 'include' function, which works just
     // like require(), in that each template includes relative to
     // itself
     var tplData = {}
@@ -208,7 +201,7 @@
     })
     tplData.include = include(f, tag)
 
-    // include a link to &#x27;locals&#x27; to see what we&#x27;ve been provided.
+    // include a link to 'locals' to see what we've been provided.
     tplData.locals = tplData
 
     out = compile(f)(tplData)
@@ -217,7 +210,7 @@
     return out
   }
 
-  // a partial&#x27;s effective tag is the parent tag + f + data
+  // a partial's effective tag is the parent tag + f + data
   function include (from, tag) { return function (f, data) {
     var ins = sigmund(data)
     , t = tag + f + ins
@@ -253,13 +246,13 @@
 }</pre></li>
     <li>example usage<pre class="apidocCodePre">...
 ```javascript
-var ejs = require(&#x27;ejs&#x27;)
-, Templar = require(&#x27;templar&#x27;)
-, templarOptions = { engine: ejs, folder: &#x27;./templates&#x27; }
+var ejs = require('ejs')
+, Templar = require('templar')
+, templarOptions = { engine: ejs, folder: './templates' }
 
 // preload it.  Otherwise, the first request is slow, because
 // it has to load up all the templates within it.
-Templar.<span class="apidocCodeKeywordSpan">loadFolder</span>(&#x27;./templates&#x27;)
+Templar.<span class="apidocCodeKeywordSpan">loadFolder</span>('./templates')
 
 http.createServer(function (req, res) {
 // note that this causes a sync fs hit the first time if
@@ -279,3 +272,4 @@ res.template = Templar(req, res, templarOptions)
     ]
 </div>
 </div>
+</body></html>
