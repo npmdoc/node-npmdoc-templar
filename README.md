@@ -1,6 +1,6 @@
 # npmdoc-templar
 
-#### api documentation for  [templar (v0.2.2)](https://github.com/isaacs/templar)  [![npm package](https://img.shields.io/npm/v/npmdoc-templar.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-templar) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-templar.svg)](https://travis-ci.org/npmdoc/node-npmdoc-templar)
+#### basic api documentation for  [templar (v0.2.2)](https://github.com/isaacs/templar)  [![npm package](https://img.shields.io/npm/v/npmdoc-templar.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-templar) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-templar.svg)](https://travis-ci.org/npmdoc/node-npmdoc-templar)
 
 #### A lightweight template thing
 
@@ -59,7 +59,8 @@
     "scripts": {
         "test": "tap test/*.js"
     },
-    "version": "0.2.2"
+    "version": "0.2.2",
+    "bin": {}
 }
 ```
 
